@@ -492,8 +492,10 @@ class MultiplyArrayField(LinearOperator):
         array = args[0]
         self.arg = args[1]
         self.domain = self.arg.domain
-        self.axis = 0
-        self.matrix = sparse.diags([array.data], [0], shape=[self.domain.grids[0].N]*2)
+        
+        reshaped_array_data = array.data.reshape(np.prod(array.data.shape))
+        self.matrix = sparse.diags([reshaped_array_data], [0], shape=[len(reshaped_array_data)]*2) 
+        self.axis = 'full'
         super().__init__(self.arg)
 
 
