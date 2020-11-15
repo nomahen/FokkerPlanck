@@ -82,6 +82,10 @@ class Array:
             self.data = np.zeros(self.domain.shape)
         else:
             self.data = data
+            
+    def multi_data(self): # NK: testing to get finite difference to work on arrays
+        """ return multi-dimensional view of data """
+        return self.data.reshape(self.domain.shape)
 
     def __neg__(self):
         return Array(self.domain, data=-self.data)
@@ -365,6 +369,8 @@ class LinearOperator(Operator):
             else:
                 self.axis = 'full'
                 self.matrix = self._full_matrix @ arg._full_matrix
+        elif isinstance(arg, Array): # NK: testing
+            self.field = arg
         self.args = [self.field]
 
     def get_matrix(self, axis):
