@@ -244,6 +244,17 @@ class Multiply(Operator):
         self.data = self.args[0].data * self.args[1].data
         np.copyto(out.data, self.data)
         return out
+    
+    def field_coeff(self, field, axis='full'):
+        for arg in self.args:
+            if isinstance(arg, LinearOperator):
+                if arg.field == field:
+                    return arg.get_matrix(axis)
+            #if isinstance(arg, Addition):
+            #    coeff = arg.field_coeff(field)
+            #    if not (coeff is None):
+            #        return coeff
+        return Const(field, 0).get_matrix(axis)
 
 
 class MultiplyNumberField(Operator):
@@ -384,7 +395,7 @@ class LinearOperator(Operator):
     def operate(self, out=None):
         field = self.field
         if self.axis == 'full':
-            self.data = self.matrix @ field.flatten_data()
+            self.data = self.matrix @ field.flatten_data() # d2(f)dEdR ### dfdE -- L(f) --> L*(L(f)) --> M1 @ M2 @ E, M1 --> no dependence on E??
             self.data = self.data.reshape(field.domain.shape)
         else:
             self.data = apply_matrix(self.matrix, field.multi_data(), self.axis)
