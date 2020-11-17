@@ -8,7 +8,7 @@ from field import LinearOperator
 
 class FiniteDifferenceUniformGrid(LinearOperator):
 
-    def __init__(self, derivative_order, convergence_order, arg, axis=0, pad=None, stencil_type='centered', do_full=0):
+    def __init__(self, derivative_order, convergence_order, arg, axis=0, pad=None, stencil_type='centered'):
         if stencil_type == 'centered' and convergence_order % 2 != 0:
             raise ValueError("Centered finite difference has even convergence order")
         if stencil_type == 'forward' or stencil_type == 'backward':
@@ -24,7 +24,6 @@ class FiniteDifferenceUniformGrid(LinearOperator):
         self._stencil_shape(stencil_type)
         self._make_stencil(self.grid)
         self._build_matrices(self.grid)
-        self.do_full = do_full # NK
         super().__init__(arg)
 
     def _stencil_shape(self, stencil_type):
@@ -62,16 +61,10 @@ class FiniteDifferenceUniformGrid(LinearOperator):
         self.stencil = np.linalg.solve(S, b)
 
     def _build_matrices(self, grid):
-        if self.do_full:
-            shape = [full_dim*(grid.N + self.pad[0] + self.pad[1])] * 2
-            padded_matrix = sparse.diags(self.stencil, self.j, shape=shape)
-            self.padded_matrix = sparse.diags(self.stencil, self.j, shape=shape)
-            self.matrix = self._unpadded_matrix(grid, expanded=full_dim)
-        else:
-            shape = [grid.N + self.pad[0] + self.pad[1]] * 2
-            padded_matrix = sparse.diags(self.stencil, self.j, shape=shape)
-            self.padded_matrix = sparse.diags(self.stencil, self.j, shape=shape)
-            self.matrix = self._unpadded_matrix(grid)
+        shape = [grid.N + self.pad[0] + self.pad[1]] * 2
+        padded_matrix = sparse.diags(self.stencil, self.j, shape=shape)
+        self.padded_matrix = sparse.diags(self.stencil, self.j, shape=shape)
+        self.matrix = self._unpadded_matrix(grid)
 
     def error_estimate(self, lengthscale):
         error_degree = self.dof

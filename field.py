@@ -4,6 +4,7 @@ import scipy.sparse as sparse
 import matplotlib.pyplot as plt
 from functools import reduce
 import numbers
+from scipy.special import factorial
 
 # next two functions from K. J. Burns
 def reshape_vector(data, dim=2, axis=-1):
@@ -608,7 +609,7 @@ class FieldSystem:
             field.data = self.data[i]
         self.field_list = field_list
 
-class BoundaryCondition(field.LinearOperator):
+class BoundaryCondition(LinearOperator):
     def __init__(self, derivative_order, convergence_order, arg, value, axis=0):
         self.derivative_order = derivative_order
         self.convergence_order = convergence_order
@@ -616,7 +617,7 @@ class BoundaryCondition(field.LinearOperator):
         self.value = value
         self.axis = axis
         self.grid = arg.domain.grids[axis]
-        if not isinstance(self.grid, field.UniformNonPeriodicGrid):
+        if not isinstance(self.grid, UniformNonPeriodicGrid):
             raise ValueError("Can only apply BC's on UniformNonPeriodicGrid")
         self._build_vector()
         N = self.grid.N
