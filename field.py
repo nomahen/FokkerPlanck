@@ -22,7 +22,7 @@ def apply_matrix(matrix, array, axis, **kw):
     arr_sig = list(range(dim))
     out_sig = list(range(dim))
     out_sig[axis] = dim
-    # Handle sparse matrices
+    # Handle sparse mat
     if sparse.isspmatrix(matrix):
         matrix = matrix.toarray()
     return np.einsum(matrix, mat_sig, array, arr_sig, out_sig, **kw)
@@ -608,63 +608,6 @@ class FieldSystem:
         for i, field in enumerate(field_list):
             field.data = self.data[i]
         self.field_list = field_list
-
-class BoundaryCondition(LinearOperator):
-    def __init__(self, derivative_order, convergence_order, arg, value, axis=0):
-        self.derivative_order = derivative_order
-        self.convergence_order = convergence_order
-        self.dof = self.derivative_order + self.convergence_order
-        self.value = value
-        self.axis = axis
-        self.grid = arg.domain.grids[axis]
-        if not isinstance(self.grid, UniformNonPeriodicGrid):
-            raise ValueError("Can only apply BC's on UniformNonPeriodicGrid")
-        self._build_vector()
-        N = self.grid.N
-        self.matrix = self.vector.reshape((1,N))
-        super().__init__(arg)
-    def _coeffs(self, dx, j):
-        i = np.arange(self.dof)[:, None]
-        j = j[None, :]
-        S = 1/factorial(i)*(j*dx)**i
-        b = np.zeros( self.dof )
-        b[self.derivative_order] = 1.
-        return np.linalg.solve(S, b)
-    def field_coeff(self, field, axis=None):
-        if axis == None:
-            axis = self.axis
-        if axis != self.axis:
-            raise ValueError("Axis must match self.axis")
-        if field == self.field:
-            return self.matrix
-        else:
-            return 0*self.matrix
-class Left(BoundaryCondition):
-    def _build_vector(self):
-        dx = self.grid.dx
-        j = 1/2 + np.arange(self.dof)
-        coeffs = self._coeffs(dx, j)
-        self.vector = np.zeros(self.grid.N)
-        self.vector[:self.dof] = coeffs
-    def operate(self):
-        s = axslice(self.axis, 1, None)
-        BC = self.value - apply_matrix(self.matrix[:,1:], self.field.data[s], self.axis)
-        BC /= self.matrix[0,0]
-        s = axslice(self.axis, 0, 1)
-        self.field.data[s] = BC
-class Right(BoundaryCondition):
-    def _build_vector(self):
-        dx = self.grid.dx
-        j = np.arange(self.dof) - self.dof + 1/2
-        coeffs = self._coeffs(dx, j)
-        self.vector = np.zeros(self.grid.N)
-        self.vector[-self.dof:] = coeffs
-    def operate(self):
-        s = axslice(self.axis, None, -1)
-        BC = self.value - apply_matrix(self.matrix[:,:-1], self.field.data[s], self.axis)
-        BC /= self.matrix[0,-1]
-        s = axslice(self.axis, -1, None)
-        self.field.data[s] = BC
 
 class UniformNonPeriodicGrid:
     def __init__(self, N, interval):
