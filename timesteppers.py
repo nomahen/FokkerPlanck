@@ -175,12 +175,90 @@ class CrankNicolson(ImplicitTimestepper):
             self.RHS_matrix = self.M - dt/2*self.L
             self.LU = spla.splu(LHS.tocsc(), permc_spec='NATURAL')
             self.dt = dt
-        self._transpose_pre()
-        # change view
-        self.RHS = self.RHS.reshape(self.data.shape)
-        apply_matrix(self.RHS_matrix, self.data, 0, out=self.RHS)
-        self.data = self.LU.solve(self.RHS)
-        self._transpose_post()
+        
+        if (self.axis == 'full'):
+            np.copyto(self.data, self.X.data)
+            data_shape = self.data.shape
+            flattened_data = self.data.reshape(np.prod(data_shape))
+            self.RHS = self.RHS.reshape(flattened_data.shape)
+            apply_matrix(self.RHS_matrix, flattened_data, 0, out=self.RHS)
+            self.data = self.LU.solve(self.RHS).reshape(data_shape)
+            np.copyto(self.X.data, self.data)
+            
+        else:
+            self._transpose_pre()
+            # change view
+            self.RHS = self.RHS.reshape(self.data.shape)
+            apply_matrix(self.RHS_matrix, self.data, 0, out=self.RHS)
+            self.data = self.LU.solve(self.RHS)
+            self._transpose_post()
+            
+from scipy.sparse.linalg import lgmres            
+class CrankNicolson2(ImplicitTimestepper):
+
+    def __init__(self, eq_set, axis):
+        super().__init__(eq_set, axis)
+        self.RHS = np.copy(self.data)
+
+    def _step(self, dt):
+        if dt != self.dt:
+            self.LHS = self.M + dt/2*self.L
+            self.RHS_matrix = self.M - dt/2*self.L
+            #self.LU = spla.splu(LHS.tocsc(), permc_spec='NATURAL')
+            self.dt = dt
+        
+        if (self.axis == 'full'):
+            np.copyto(self.data, self.X.data)
+            data_shape = self.data.shape
+            flattened_data = self.data.reshape(np.prod(data_shape))
+            self.RHS = self.RHS.reshape(flattened_data.shape)
+            apply_matrix(self.RHS_matrix, flattened_data, 0, out=self.RHS)
+            #self.data = self.LU.solve(self.RHS).reshape(data_shape)
+            self.data,exitCode = lgmres(self.LHS,self.RHS)
+            self.data=self.data.reshape(data_shape)
+            np.copyto(self.X.data, self.data)
+            
+        else:
+            self._transpose_pre()
+            # change view
+            self.RHS = self.RHS.reshape(self.data.shape)
+            apply_matrix(self.RHS_matrix, self.data, 0, out=self.RHS)
+            self.data = self.LU.solve(self.RHS)
+            self._transpose_post()
+            
+            
+from scipy.sparse.linalg import gmres            
+class CrankNicolson3(ImplicitTimestepper):
+
+    def __init__(self, eq_set, axis):
+        super().__init__(eq_set, axis)
+        self.RHS = np.copy(self.data)
+
+    def _step(self, dt):
+        if dt != self.dt:
+            self.LHS = self.M + dt/2*self.L
+            self.RHS_matrix = self.M - dt/2*self.L
+            #self.LU = spla.splu(LHS.tocsc(), permc_spec='NATURAL')
+            self.dt = dt
+        
+        if (self.axis == 'full'):
+            np.copyto(self.data, self.X.data)
+            data_shape = self.data.shape
+            flattened_data = self.data.reshape(np.prod(data_shape))
+            self.RHS = self.RHS.reshape(flattened_data.shape)
+            apply_matrix(self.RHS_matrix, flattened_data, 0, out=self.RHS)
+            #self.data = self.LU.solve(self.RHS).reshape(data_shape)
+            self.data,exitCode = gmres(self.LHS,self.RHS)
+            self.data=self.data.reshape(data_shape)
+            np.copyto(self.X.data, self.data)
+            
+        else:
+            self._transpose_pre()
+            # change view
+            self.RHS = self.RHS.reshape(self.data.shape)
+            apply_matrix(self.RHS_matrix, self.data, 0, out=self.RHS)
+            self.data = self.LU.solve(self.RHS)
+            self._transpose_post()
 
 
 class IMEXTimestepper(ExplicitTimestepper):

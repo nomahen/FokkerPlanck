@@ -33,7 +33,10 @@ class UniformPeriodicGrid:
         self.dx = self.values[1] - self.values[0]
         self.length = length
         self.N = N
-
+        
+    @property
+    def _expanded_grid(self):
+        return np.concatenate((self.values, [self.length]))
 
 class PeriodicGrid:
 
@@ -41,6 +44,24 @@ class PeriodicGrid:
         self.values = values
         self.length = length
         self.N = len(values)
+        
+    @property
+    def _expanded_grid(self):
+        return np.concatenate((self.values, [self.length]))
+
+class UniformNonPeriodicGrid:
+
+    def __init__(self, N, interval):
+        """ Non-uniform grid; no grid points at the endpoints of the interval"""
+        self.start = interval[0]
+        self.end = interval[1]
+        self.dx = (self.end - self.start)/N
+        self.N = N
+        self.values = np.linspace(self.start, self.end, N, endpoint=False) + self.dx/2
+
+    @property
+    def _expanded_grid(self):
+        return np.linspace(self.start, self.end, self.N+1, endpoint=True)
 
 
 class Domain:
@@ -66,13 +87,13 @@ class Domain:
         expanded_shape = np.array(self.shape, dtype=np.int)
         expanded_shape += 1
         for i, grid in enumerate(self.grids):
-            grid_v = grid.values
-            grid_v = np.concatenate((grid_v, [grid.length]))
+#            grid_v = grid.values
+#            grid_v = np.concatenate((grid_v, [grid.length]))
+            grid_v = grid._expanded_grid
             grid_v = reshape_vector(grid_v, self.dimension, i)
             grid_v = np.broadcast_to(grid_v, expanded_shape)
             v.append(grid_v)
         return v
-
 
 class Array:
 
@@ -82,6 +103,10 @@ class Array:
             self.data = np.zeros(self.domain.shape)
         else:
             self.data = data
+            
+    def multi_data(self): # NK: testing to get finite difference to work on arrays
+        """ return multi-dimensional view of data """
+        return self.data.reshape(self.domain.shape)
 
     def __neg__(self):
         return Array(self.domain, data=-self.data)
@@ -363,8 +388,10 @@ class LinearOperator(Operator):
             if self.axis == arg.axis:
                 self.matrix = self.matrix @ arg.matrix
             else:
-                self.axis = 'full'
                 self.matrix = self._full_matrix @ arg._full_matrix
+                self.axis = 'full'
+        elif isinstance(arg, Array): # NK: testing
+            self.field = arg
         self.args = [self.field]
 
     def get_matrix(self, axis):
@@ -492,8 +519,10 @@ class MultiplyArrayField(LinearOperator):
         array = args[0]
         self.arg = args[1]
         self.domain = self.arg.domain
-        self.axis = 0
-        self.matrix = sparse.diags([array.data], [0], shape=[self.domain.grids[0].N]*2)
+        
+        reshaped_array_data = array.data.reshape(np.prod(array.data.shape))
+        self.matrix = sparse.diags([reshaped_array_data], [0], shape=[len(reshaped_array_data)]*2) 
+        self.axis = 'full'
         super().__init__(self.arg)
 
 
