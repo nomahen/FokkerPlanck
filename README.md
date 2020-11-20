@@ -1,4 +1,4 @@
-To run the code, you will need: 
+To run the code for a given set of initial conditions, you will need: 
 
     grid_x, a uniform non-periodic grid
     grid_y, a uniform non-periodic grid
@@ -28,3 +28,19 @@ To run, execute:
 
     while diff.t < tmax:
         diff.step(dt)
+		
+We ran three simulations:
+
+1). Wiener process.
+2). Ornstein-Uhlenbeck Process
+3). 2D Gaussian initial conditions
+
+For the first two simulations, in order to compare to the analytic solutions, we created initial conditions which were constant in the y-direction
+and only examined the output with respect to x. We created initial conditions by calculating the analytical results of evolving delta functions,
+and then passed the output into our FP-solver as new initial conditions. We tested these for varying resolutions from N = 16 to N = 256, and
+ plotted one row in the x-dimension against the results from the analytic solutions. To analyze the convergence of these equations, we calculated
+the absolute error with respect to the analytical solution for each resolution.
+
+For the two-dimensional system,  we constructed an arbitrary Gaussian for the initial conditions, and plotted the results as a 
+heatmap in two dimensions. Since no analytical solution was available, we tested for convergence using the same method as above
+but comparing the outputs to our highest resolution simulation.
