@@ -47,6 +47,5 @@ and then passed the output into our FP-solver as new initial conditions. We test
  plotted one row in the x-dimension against the results from the analytic solutions. To analyze the convergence of these equations, we calculated
 the absolute error with respect to the analytical solution for each resolution.
 
-For the two-dimensional system,  we constructed an arbitrary Gaussian for the initial conditions, and plotted the results as a 
-heatmap in two dimensions. Since no analytical solution was available, we tested for convergence using the same method as above
-but comparing the outputs to our highest resolution simulation.
+Finally,  we constructed a two-dimensional Gaussian for the initial conditions, and constructed non-linear drift and diffusion coefficients to test
+the Fokker-Planck equation worked in two dimensions. We plotted the results as a heatmap in two dimensions. Since no analytical solution was available, we tested for convergence using the same method as above but comparing the outputs to our highest resolution simulation.
