@@ -1,3 +1,5 @@
+Code for both the Fokker-Planck equation and the test simulations is contained in fp_test.ipynb. Running it requires the files field, spatial, and timesteppers.
+
 To run the code for a given set of initial conditions, you will need: 
 
     grid_x, a uniform non-periodic grid
