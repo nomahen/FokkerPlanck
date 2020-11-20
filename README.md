@@ -14,12 +14,14 @@ To run the code for a given set of initial conditions, you will need:
 
     p.data[:] = np.copy(IC)
 
-	mu, an Array of size domain - contains the drift coefficients
-    D_arr, an Array of size domain - contains the diffusion coefficients
+    mu, an Array of size domain - contains the drift coefficients (there may be up to two of these) 
+    D_arr, an Array of size domain - contains the diffusion coefficients (there may be up to four of these)
 
-    mu_i = [mu, mu]
-    D_ij = [[D_arr, D_arr],
+    mu_i = [mu, mu] - a list containing the drift coefficient arrays associated with each of the first derivative operators [dx, dy].
+    D_ij = [[D_arr, D_arr], - a list containing the diffusion coefficient corresponding to the second derivatives:  [dxx, dxdy, dydx, dyy ]
             [D_arr, D_arr]]
+	    
+Note: the elements of the mu_i and D_ij lists are allowed to be different from one another.
 			
     diff = FokkerPlanck_2D(X,mu_i,D_ij)
 
