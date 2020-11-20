@@ -32,7 +32,9 @@ To run, execute:
 We ran three simulations:
 
 1). Wiener process.
+
 2). Ornstein-Uhlenbeck Process
+
 3). 2D Gaussian initial conditions
 
 For the first two simulations, in order to compare to the analytic solutions, we created initial conditions which were constant in the y-direction
