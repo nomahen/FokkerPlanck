@@ -1,4 +1,4 @@
-Code for both the Fokker-Planck equation and the test simulations is contained in fp_test.ipynb. Running it requires the files field, spatial, and timesteppers.
+Code for both the Fokker-Planck equation is in fokkerplanck.py and the test simulations are contained in fp_test.ipynb. Running it requires the files fokkerplanck, field, spatial, and timesteppers.
 
 To run the code for a given set of initial conditions, you will need: 
 
